@@ -1,4 +1,5 @@
-const { kv } = require('@vercel/kv');
+const { Redis } = require('@upstash/redis');
+const kv = Redis.fromEnv();
 
 const CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
 

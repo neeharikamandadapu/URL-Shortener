@@ -4,6 +4,6 @@
   "description": "A polished URL shortener with Vercel serverless functions and KV storage",
   "license": "MIT",
   "dependencies": {
-    "@vercel/kv": "^2.0.0"
+    "@upstash/redis": "^1.34.0"
   }
 }
