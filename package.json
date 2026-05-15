@@ -1,0 +1,9 @@
+{
+  "name": "url-shortener",
+  "version": "1.0.0",
+  "description": "A polished URL shortener with Vercel serverless functions and KV storage",
+  "license": "MIT",
+  "dependencies": {
+    "@vercel/kv": "^2.0.0"
+  }
+}

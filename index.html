@@ -957,9 +957,9 @@
   }
 
   /* ── FORM SUBMIT ────────────────────────────────────────────────── */
-  document.getElementById('shorten-form').addEventListener('submit', e => {
+  document.getElementById('shorten-form').addEventListener('submit', async e => {
     e.preventDefault();
-    const rawURL  = document.getElementById('url-input').value;
+    const rawURL   = document.getElementById('url-input').value;
     const rawAlias = document.getElementById('alias-input').value;
 
     if (!rawURL.trim()) { showErr('Please enter a URL to shorten.'); return; }
@@ -971,9 +971,24 @@
     btn.textContent = 'Shortening…';
     btn.disabled = true;
 
-    setTimeout(() => {
-      const alias = sanitizeAlias(rawAlias) || randCode();
-      const shortURL = BASE + alias;
+    try {
+      const res = await fetch('/api/shorten', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, alias: sanitizeAlias(rawAlias) || undefined }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showErr(data.error || 'Something went wrong. Please try again.');
+        btn.innerHTML = 'Shorten URL →';
+        btn.disabled = false;
+        return;
+      }
+
+      const alias    = data.alias;
+      const shortURL = window.location.origin + '/' + alias;
       currentShortURL = shortURL;
 
       /* show result card */
@@ -985,10 +1000,14 @@
       mainCopyBtn.classList.remove('copied');
       mainCopyBtn.innerHTML = '<span>Copy</span>';
 
-      /* add to table */
-      links.unshift({ original:url, short:shortURL, alias, clicks:0, created:new Date().toISOString().split('T')[0], status:'active' });
+      /* add to table + persist in localStorage */
+      const entry = { original:url, short:shortURL, alias, clicks:0, created:new Date().toISOString().split('T')[0], status:'active' };
+      links.unshift(entry);
+      /* only persist real (non-mock) links */
+      const realLinks = links.filter(l => !mockLinks.find(m => m.alias === l.alias));
+      localStorage.setItem('snip_links', JSON.stringify(realLinks.slice(0, 50)));
 
-      /* seed analytics for new link */
+      /* seed analytics entry for new link */
       analyticsDB[alias] = {
         clicks:'0', visitors:'0', rate:'0%',
         days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], vals:[0,0,0,0,0,0,0],
@@ -996,12 +1015,16 @@
       };
 
       renderTable();
-      btn.innerHTML = 'Shorten URL →';
-      btn.disabled = false;
       document.getElementById('url-input').value = '';
       document.getElementById('alias-input').value = '';
       resultEl.scrollIntoView({behavior:'smooth', block:'center'});
-    }, 420);
+
+    } catch (err) {
+      showErr('Network error — please check your connection and try again.');
+    } finally {
+      btn.innerHTML = 'Shorten URL →';
+      btn.disabled = false;
+    }
   });
 
   /* ── COPY RESULT ────────────────────────────────────────────────── */
@@ -1120,9 +1143,13 @@
   }, {threshold: 0.1});
 
   /* ── INIT ───────────────────────────────────────────────────────── */
+  // Load persisted links from localStorage, fall back to mock data
+  const saved = JSON.parse(localStorage.getItem('snip_links') || 'null');
+  if (saved && saved.length > 0) links = saved;
+
   renderTable();
   renderFAQ();
-  selectLink('design');
+  selectLink(links[0]?.alias || 'design');
 
   /* attach reveal observer after DOM is ready */
   document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
