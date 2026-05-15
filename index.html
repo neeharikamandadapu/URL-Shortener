@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>snip. — Short links that mean business</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,600;0,9..144,700;1,9..144,400;1,9..144,600;1,9..144,700;1,9..144,900&family=Syne:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <style>
+    /* ── RESET ───────────────────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    /* ── TOKENS ──────────────────────────────────────────────────────── */
+    :root {
+      --bg:          #07070d;
+      --surface:     #0d0d18;
+      --surface-2:   #131320;
+      --surface-3:   #1a1a2a;
+      --border:      rgba(255,255,255,0.06);
+      --border-hi:   rgba(255,255,255,0.12);
+      --accent:      #00e096;
+      --accent-dk:   #00b87a;
+      --accent-dim:  rgba(0,224,150,0.09);
+      --accent-glow: rgba(0,224,150,0.18);
+      --text:        #edead3;
+      --text-2:      #8888a2;
+      --text-3:      #484860;
+      --error:       #f87171;
+      --info:        #60a5fa;
+      --warn:        #fbbf24;
+      --font-d: 'Fraunces', serif;
+      --font-u: 'Syne', sans-serif;
+      --r:     10px;
+      --r-sm:  7px;
+      --r-lg:  16px;
+      --ease:  cubic-bezier(.4,0,.2,1);
+      --t:     0.2s;
+    }
+
+    body {
+      font-family: var(--font-u);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 15px;
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    /* ── SCROLL ──────────────────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 5px; height: 5px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: var(--surface-3); border-radius: 3px; }
+    ::selection { background: var(--accent-glow); color: var(--text); }
+
+    /* ── UTILITY ─────────────────────────────────────────────────────── */
+    .container { max-width: 1160px; margin: 0 auto; padding: 0 24px; }
+
+    /* ── TYPOGRAPHY ──────────────────────────────────────────────────── */
+    h1, h2, h3 { font-family: var(--font-d); line-height: 1.1; }
+
+    /* ── BUTTONS ─────────────────────────────────────────────────────── */
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      padding: 9px 18px;
+      border-radius: var(--r-sm);
+      font-family: var(--font-u); font-size: 14px; font-weight: 600;
+      cursor: pointer; transition: all var(--t) var(--ease);
+      border: 1px solid transparent; text-decoration: none; white-space: nowrap;
+    }
+    .btn-ghost  { color: var(--text-2); background: transparent; }
+    .btn-ghost:hover { color: var(--text); background: var(--surface-2); }
+    .btn-outline { color: var(--text); background: transparent; border-color: var(--border-hi); }
+    .btn-outline:hover { border-color: var(--accent); color: var(--accent); }
+    .btn-primary {
+      color: #07070d; background: var(--accent); border-color: var(--accent); font-weight: 700;
+    }
+    .btn-primary:hover {
+      background: var(--accent-dk); border-color: var(--accent-dk);
+      transform: translateY(-1px); box-shadow: 0 6px 20px var(--accent-glow);
+    }
+    .btn-primary:active { transform: translateY(0); }
+    .btn-lg { padding: 13px 26px; font-size: 15px; border-radius: var(--r); }
+    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+
+    /* ── NAV ─────────────────────────────────────────────────────────── */
+    nav {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 100;
+      height: 62px;
+      display: flex; align-items: center;
+      padding: 0 24px;
+      background: rgba(7,7,13,.85);
+      backdrop-filter: blur(18px);
+      -webkit-backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--border);
+    }
+    .nav-inner {
+      width: 100%; max-width: 1160px; margin: 0 auto;
+      display: flex; align-items: center; justify-content: space-between;
+    }
+    .logo {
+      font-family: var(--font-d); font-style: italic; font-weight: 700;
+      font-size: 21px; color: var(--text); text-decoration: none; letter-spacing: -.02em;
+    }
+    .logo span { color: var(--accent); }
+    .nav-links { display: flex; align-items: center; gap: 28px; list-style: none; }
+    .nav-links a {
+      color: var(--text-2); text-decoration: none; font-size: 14px; font-weight: 500;
+      transition: color var(--t);
+    }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta { display: flex; align-items: center; gap: 10px; }
+    .hamburger { display: none; flex-direction: column; gap: 5px; cursor: pointer; padding: 4px; background: none; border: none; }
+    .hamburger span { display: block; width: 22px; height: 2px; background: var(--text-2); border-radius: 2px; transition: all var(--t); }
+
+    .mobile-nav {
+      display: none; position: fixed; top: 62px; left: 0; right: 0; z-index: 99;
+      background: var(--surface); border-bottom: 1px solid var(--border);
+      padding: 16px 24px 24px; flex-direction: column; gap: 4px;
+    }
+    .mobile-nav.open { display: flex; }
+    .mobile-nav a {
+      color: var(--text-2); text-decoration: none; padding: 11px 0; font-weight: 500;
+      border-bottom: 1px solid var(--border);
+    }
+    .mobile-nav a:last-child { border-bottom: none; }
+    .mobile-nav .btn-primary { margin-top: 10px; width: 100%; justify-content: center; }
+
+    /* ── HERO ────────────────────────────────────────────────────────── */
+    .hero {
+      position: relative; min-height: 100vh;
+      display: flex; align-items: center;
+      padding: 116px 24px 80px; overflow: hidden;
+    }
+    /* gradient mesh */
+    .hero::before {
+      content: ''; position: absolute; inset: 0;
+      background:
+        radial-gradient(ellipse 100% 70% at 15% 5%, rgba(0,224,150,.08) 0%, transparent 55%),
+        radial-gradient(ellipse 60% 50% at 85% 90%, rgba(96,165,250,.05) 0%, transparent 55%),
+        radial-gradient(ellipse 45% 45% at 55% 25%, rgba(139,92,246,.04) 0%, transparent 55%);
+      pointer-events: none;
+    }
+    /* dot grid */
+    .hero::after {
+      content: ''; position: absolute; inset: 0;
+      background-image: radial-gradient(circle, rgba(255,255,255,.028) 1px, transparent 1px);
+      background-size: 34px 34px; pointer-events: none;
+    }
+    .hero-inner {
+      position: relative; z-index: 1;
+      max-width: 1160px; margin: 0 auto; width: 100%;
+      display: flex; flex-direction: column; align-items: center;
+      text-align: center; gap: 40px;
+    }
+
+    .hero-badge {
+      display: inline-flex; align-items: center; gap: 8px;
+      padding: 5px 14px;
+      border-radius: 100px; border: 1px solid rgba(0,224,150,.22);
+      background: var(--accent-dim);
+      font-size: 12px; font-weight: 700; color: var(--accent);
+      letter-spacing: .05em; text-transform: uppercase;
+      animation: fadeUp .6s var(--ease) both;
+    }
+    .hero-badge::before {
+      content: ''; width: 6px; height: 6px; border-radius: 50%;
+      background: var(--accent); box-shadow: 0 0 8px var(--accent);
+      animation: blink 2s ease infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+
+    h1.hero-title {
+      font-size: clamp(42px, 6.5vw, 80px);
+      font-weight: 700; letter-spacing: -.035em; color: var(--text);
+      animation: fadeUp .7s .1s var(--ease) both;
+    }
+    h1.hero-title em {
+      font-style: italic;
+      background: linear-gradient(90deg, var(--accent) 0%, #4ade80 50%, var(--accent) 100%);
+      background-size: 200%;
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text;
+      animation: shimmer 4s ease infinite;
+    }
+    @keyframes shimmer { 0%{background-position:0%} 100%{background-position:200%} }
+
+    .hero-sub {
+      font-size: clamp(16px, 2vw, 19px); color: var(--text-2);
+      max-width: 520px; line-height: 1.75;
+      animation: fadeUp .7s .2s var(--ease) both;
+    }
+
+    /* ── FORM CARD ───────────────────────────────────────────────────── */
+    .form-card {
+      width: 100%; max-width: 700px;
+      background: var(--surface); border: 1px solid var(--border-hi);
+      border-radius: var(--r-lg); padding: 30px 30px 26px;
+      box-shadow: 0 24px 64px rgba(0,0,0,.5);
+      animation: fadeUp .7s .3s var(--ease) both;
+    }
+    .form-row { display: flex; gap: 12px; margin-bottom: 14px; }
+    .input-wrap { display: flex; flex-direction: column; gap: 7px; }
+    .input-wrap label {
+      font-size: 11px; font-weight: 700; letter-spacing: .06em;
+      text-transform: uppercase; color: var(--text-3);
+    }
+    .input-field {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--r-sm); color: var(--text);
+      font-family: var(--font-u); font-size: 14px; padding: 12px 15px;
+      outline: none; width: 100%;
+      transition: border-color var(--t), box-shadow var(--t);
+    }
+    .input-field::placeholder { color: var(--text-3); }
+    .input-field:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+    .input-field.has-error { border-color: var(--error); box-shadow: 0 0 0 3px rgba(248,113,113,.1); }
+
+    .alias-wrap {
+      display: flex; align-items: center;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--r-sm); overflow: hidden;
+      transition: border-color var(--t), box-shadow var(--t);
+    }
+    .alias-wrap:focus-within { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-dim); }
+    .alias-domain {
+      padding: 12px 10px 12px 15px; font-size: 13px;
+      color: var(--text-3); white-space: nowrap;
+      border-right: 1px solid var(--border); background: var(--surface-3);
+    }
+    .alias-input {
+      flex: 1; background: transparent; border: none; outline: none;
+      color: var(--text); font-family: var(--font-u); font-size: 14px; padding: 12px 15px;
+    }
+    .alias-input::placeholder { color: var(--text-3); }
+
+    .form-foot {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    }
+    .err-msg {
+      display: none; align-items: center; gap: 6px;
+      font-size: 13px; color: var(--error);
+    }
+    .err-msg.show { display: flex; }
+
+    /* ── HERO STATS ──────────────────────────────────────────────────── */
+    .hero-stats {
+      display: flex; align-items: center; justify-content: center;
+      gap: 16px; flex-wrap: wrap;
+      animation: fadeUp .7s .4s var(--ease) both;
+    }
+    .stat-chip {
+      display: flex; align-items: center; gap: 10px;
+      padding: 10px 18px; border-radius: var(--r);
+      background: var(--surface); border: 1px solid var(--border);
+    }
+    .stat-chip-icon { font-size: 17px; line-height: 1; }
+    .stat-chip strong { display: block; font-size: 15px; font-weight: 700; line-height: 1.25; }
+    .stat-chip span { font-size: 11px; color: var(--text-2); font-weight: 500; }
+
+    /* ── RESULT CARD ─────────────────────────────────────────────────── */
+    #result { padding: 0 24px 40px; display: none; }
+    .result-card {
+      max-width: 700px; margin: 0 auto;
+      background: var(--surface); border: 1px solid rgba(0,224,150,.28);
+      border-radius: var(--r-lg); padding: 26px 28px;
+      box-shadow: 0 0 48px rgba(0,224,150,.07);
+      animation: slideDown .4s var(--ease) both;
+    }
+    @keyframes slideDown { from{opacity:0;transform:translateY(-10px)} to{opacity:1;transform:translateY(0)} }
+
+    .result-label {
+      display: flex; align-items: center; gap: 7px;
+      font-size: 11px; font-weight: 700; letter-spacing: .07em;
+      text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+    }
+    .result-label::before {
+      content: '✓'; width: 17px; height: 17px; border-radius: 50%;
+      background: var(--accent); color: #07070d; font-size: 9px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .result-url-row {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--r-sm); padding: 13px 16px; margin-bottom: 10px;
+    }
+    #result-url {
+      flex: 1; font-family: var(--font-d); font-size: 22px; font-weight: 600;
+      color: var(--accent); letter-spacing: -.01em;
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .copy-btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: var(--r-sm);
+      background: var(--accent); border: 1px solid transparent; color: #07070d;
+      font-family: var(--font-u); font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all var(--t); white-space: nowrap;
+    }
+    .copy-btn:hover { background: var(--accent-dk); transform: translateY(-1px); }
+    .copy-btn.copied {
+      background: var(--surface-3); border-color: var(--border-hi);
+      color: var(--accent); transform: none;
+    }
+    #result-original { font-size: 12px; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+    /* ── SECTION SHARED ──────────────────────────────────────────────── */
+    .section { padding: 84px 24px; }
+    .section-alt { background: var(--surface); }
+
+    .section-header { text-align: center; margin-bottom: 52px; }
+    .section-tag {
+      display: inline-block; font-size: 11px; font-weight: 700;
+      letter-spacing: .1em; text-transform: uppercase; color: var(--accent); margin-bottom: 12px;
+    }
+    .section-title { font-size: clamp(28px, 4vw, 46px); font-weight: 700; letter-spacing: -.03em; margin-bottom: 12px; }
+    .section-sub { font-size: 16px; color: var(--text-2); max-width: 460px; margin: 0 auto; line-height: 1.75; }
+
+    /* ── REVEAL ON SCROLL ────────────────────────────────────────────── */
+    .reveal { opacity: 0; transform: translateY(22px); transition: opacity .65s var(--ease), transform .65s var(--ease); }
+    .reveal.in { opacity: 1; transform: none; }
+
+    /* ── LINKS TABLE ─────────────────────────────────────────────────── */
+    .table-wrap { overflow-x: auto; border-radius: var(--r-lg); border: 1px solid var(--border); }
+    .links-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .links-table thead th {
+      text-align: left; padding: 13px 20px;
+      font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase;
+      color: var(--text-3); background: var(--surface-2);
+      border-bottom: 1px solid var(--border); white-space: nowrap;
+    }
+    .links-table tbody tr { border-bottom: 1px solid var(--border); transition: background var(--t); }
+    .links-table tbody tr:last-child { border-bottom: none; }
+    .links-table tbody tr:hover { background: var(--surface-2); cursor: pointer; }
+    .links-table tbody td { padding: 15px 20px; color: var(--text); vertical-align: middle; }
+    .td-orig { max-width: 200px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; color: var(--text-2) !important; font-size: 12px !important; }
+    .td-short { font-family: var(--font-d); font-size: 14px !important; font-weight: 600; color: var(--accent) !important; }
+    .td-num  { font-weight: 700; }
+    .td-date { color: var(--text-2) !important; font-size: 12px !important; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 5px;
+      padding: 3px 10px; border-radius: 100px;
+      font-size: 11px; font-weight: 600;
+    }
+    .badge-active { background: rgba(0,224,150,.1); color: var(--accent); }
+    .badge-active::before { content: ''; width: 5px; height: 5px; border-radius: 50%; background: var(--accent); }
+
+    .td-actions { display: flex; gap: 7px; }
+    .act-btn {
+      padding: 5px 10px; border-radius: var(--r-sm);
+      border: 1px solid var(--border); background: transparent;
+      color: var(--text-2); font-family: var(--font-u); font-size: 11px; font-weight: 600;
+      cursor: pointer; transition: all var(--t);
+    }
+    .act-btn:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+    .act-btn.copied { color: var(--accent); border-color: var(--accent); background: var(--accent-dim); }
+
+    /* ── ANALYTICS ───────────────────────────────────────────────────── */
+    .a-metrics {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 16px; margin-bottom: 24px;
+    }
+    .a-metric {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 20px 22px;
+    }
+    .a-metric-label { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--text-3); margin-bottom: 8px; }
+    .a-metric-val { font-family: var(--font-d); font-size: 32px; font-weight: 700; letter-spacing: -.03em; line-height: 1; }
+    .a-metric-ch { font-size: 12px; color: var(--accent); margin-top: 5px; font-weight: 600; }
+
+    .a-cards { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+    .a-card { background: var(--surface-2); border: 1px solid var(--border); border-radius: var(--r-lg); padding: 22px; }
+    .a-card-title { font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-3); margin-bottom: 18px; }
+
+    .bar-chart { display: flex; align-items: flex-end; gap: 8px; height: 130px; }
+    .bar-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 6px; height: 100%; justify-content: flex-end; }
+    .bar {
+      width: 100%; min-height: 4px; border-radius: 4px 4px 0 0;
+      background: rgba(0,224,150,.15); border: 1px solid rgba(0,224,150,.2);
+      position: relative; overflow: hidden; transition: background var(--t);
+    }
+    .bar::after {
+      content: ''; position: absolute; top: 0; left: 0; right: 0; height: 40%;
+      background: linear-gradient(180deg, rgba(0,224,150,.45) 0%, transparent 100%);
+    }
+    .bar:hover { background: rgba(0,224,150,.25); }
+    .bar-lbl { font-size: 10px; color: var(--text-3); }
+
+    .source-list { display: flex; flex-direction: column; gap: 13px; }
+    .source-row { display: flex; align-items: center; gap: 12px; }
+    .source-name { font-size: 13px; color: var(--text-2); width: 72px; flex-shrink: 0; }
+    .source-track { flex: 1; height: 5px; background: var(--surface-3); border-radius: 100px; overflow: hidden; }
+    .source-fill { height: 100%; border-radius: 100px; transition: width 1s var(--ease); }
+    .source-pct { font-size: 12px; font-weight: 700; color: var(--text); width: 34px; text-align: right; }
+
+    /* ── PRICING ─────────────────────────────────────────────────────── */
+    .pricing-grid {
+      display: grid; grid-template-columns: repeat(3,1fr); gap: 22px;
+      max-width: 920px; margin: 0 auto;
+    }
+    .pricing-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 30px; display: flex;
+      flex-direction: column; gap: 22px;
+      transition: border-color var(--t), transform var(--t), box-shadow var(--t);
+      position: relative;
+    }
+    .pricing-card:hover { border-color: var(--border-hi); transform: translateY(-3px); box-shadow: 0 16px 48px rgba(0,0,0,.4); }
+    .pricing-card.featured {
+      border-color: rgba(0,224,150,.35);
+      background: linear-gradient(160deg, var(--surface) 0%, rgba(0,224,150,.025) 100%);
+    }
+    .pricing-card.featured:hover { box-shadow: 0 16px 48px rgba(0,224,150,.12); }
+    .pricing-pill {
+      position: absolute; top: -11px; left: 50%; transform: translateX(-50%);
+      background: var(--accent); color: #07070d;
+      font-size: 10px; font-weight: 800; letter-spacing: .07em; text-transform: uppercase;
+      padding: 3px 12px; border-radius: 100px;
+    }
+    .plan-tier { font-size: 12px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase; color: var(--text-2); }
+    .plan-amount { font-family: var(--font-d); font-size: 44px; font-weight: 700; letter-spacing: -.04em; line-height: 1.1; }
+    .plan-period { font-size: 13px; color: var(--text-3); font-weight: 400; }
+    .plan-desc { font-size: 13px; color: var(--text-2); line-height: 1.65; }
+    .plan-feats { list-style: none; display: flex; flex-direction: column; gap: 9px; flex: 1; }
+    .plan-feats li { display: flex; align-items: center; gap: 9px; font-size: 13px; color: var(--text-2); }
+    .plan-feats li::before {
+      content: '✓'; width: 16px; height: 16px; border-radius: 50%; flex-shrink: 0;
+      background: var(--accent-dim); color: var(--accent); font-size: 9px; font-weight: 900;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .plan-feats li.off { opacity: .3; }
+    .plan-feats li.off::before { background: transparent; border: 1px solid var(--border-hi); content: '×'; color: var(--text-3); }
+
+    /* ── FAQ ─────────────────────────────────────────────────────────── */
+    .faq-list { max-width: 680px; margin: 0 auto; display: flex; flex-direction: column; gap: 10px; }
+    .faq-item {
+      background: var(--surface-2); border: 1px solid var(--border);
+      border-radius: var(--r); overflow: hidden; transition: border-color var(--t);
+    }
+    .faq-item.open { border-color: var(--border-hi); }
+    .faq-q {
+      width: 100%; text-align: left; padding: 17px 22px;
+      display: flex; align-items: center; justify-content: space-between; gap: 14px;
+      background: transparent; border: none; color: var(--text);
+      font-family: var(--font-u); font-size: 15px; font-weight: 600; cursor: pointer;
+      transition: color var(--t);
+    }
+    .faq-q:hover { color: var(--accent); }
+    .faq-icon {
+      width: 20px; height: 20px; border-radius: 50%; border: 1px solid var(--border-hi);
+      display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+      font-size: 13px; color: var(--text-3); transition: all var(--t);
+    }
+    .faq-item.open .faq-icon { background: var(--accent-dim); border-color: var(--accent); color: var(--accent); transform: rotate(45deg); }
+    .faq-body { max-height: 0; overflow: hidden; transition: max-height .38s var(--ease); }
+    .faq-item.open .faq-body { max-height: 240px; }
+    .faq-body-inner {
+      padding: 0 22px 18px; font-size: 14px; color: var(--text-2); line-height: 1.75;
+      border-top: 1px solid var(--border); padding-top: 15px;
+    }
+
+    /* ── FOOTER ──────────────────────────────────────────────────────── */
+    footer { background: var(--bg); border-top: 1px solid var(--border); padding: 60px 24px 36px; }
+    .footer-inner {
+      max-width: 1160px; margin: 0 auto;
+      display: grid; grid-template-columns: 2fr 1fr 1fr 1fr; gap: 48px;
+    }
+    .footer-logo { display: block; margin-bottom: 12px; }
+    .footer-desc { font-size: 13px; color: var(--text-3); line-height: 1.7; max-width: 200px; }
+    .footer-socials { display: flex; gap: 8px; margin-top: 18px; }
+    .social-link {
+      width: 32px; height: 32px; border: 1px solid var(--border);
+      border-radius: var(--r-sm); display: flex; align-items: center; justify-content: center;
+      color: var(--text-3); text-decoration: none; font-size: 11px; font-weight: 700;
+      transition: all var(--t);
+    }
+    .social-link:hover { border-color: var(--border-hi); color: var(--text); }
+    .footer-col h4 {
+      font-family: var(--font-u); font-size: 11px; font-weight: 700;
+      letter-spacing: .07em; text-transform: uppercase; color: var(--text-3); margin-bottom: 14px;
+    }
+    .footer-col ul { list-style: none; display: flex; flex-direction: column; gap: 9px; }
+    .footer-col ul a { color: var(--text-2); text-decoration: none; font-size: 13px; transition: color var(--t); }
+    .footer-col ul a:hover { color: var(--text); }
+    .footer-bottom {
+      max-width: 1160px; margin: 44px auto 0; padding-top: 22px;
+      border-top: 1px solid var(--border);
+      display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap;
+    }
+    .footer-bottom p { font-size: 12px; color: var(--text-3); }
+
+    /* ── KEYFRAMES ───────────────────────────────────────────────────── */
+    @keyframes fadeUp { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+
+    /* ── RESPONSIVE ──────────────────────────────────────────────────── */
+    @media (max-width: 900px) {
+      .a-cards { grid-template-columns: 1fr; }
+      .pricing-grid { grid-template-columns: 1fr; max-width: 400px; }
+    }
+    @media (max-width: 768px) {
+      .nav-links, .nav-cta { display: none; }
+      .hamburger { display: flex; }
+      .hero { padding: 96px 24px 56px; min-height: auto; }
+      .form-row { flex-direction: column; }
+      .form-foot { flex-direction: column; align-items: stretch; }
+      .form-foot .btn { width: 100%; }
+      .a-metrics { grid-template-columns: repeat(2,1fr); }
+      .footer-inner { grid-template-columns: 1fr 1fr; gap: 30px; }
+      .footer-brand { grid-column: span 2; }
+    }
+    @media (max-width: 480px) {
+      .a-metrics { grid-template-columns: 1fr; }
+      .footer-inner { grid-template-columns: 1fr; }
+      .footer-brand { grid-column: auto; }
+      #result-url { font-size: 17px; }
+      .hero-stats { gap: 10px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ─────────────── NAV ─────────────────────────────────────────────── -->
+<nav>
+  <div class="nav-inner">
+    <a href="#" class="logo">snip<span>.</span></a>
+    <ul class="nav-links">
+      <li><a href="#links">Links</a></li>
+      <li><a href="#analytics">Analytics</a></li>
+      <li><a href="#pricing">Pricing</a></li>
+      <li><a href="#faq">FAQ</a></li>
+    </ul>
+    <div class="nav-cta">
+      <a href="#" class="btn btn-ghost">Sign in</a>
+      <a href="#" class="btn btn-primary">Get started</a>
+    </div>
+    <button class="hamburger" id="hamburger" aria-label="Open menu">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+</nav>
+
+<div class="mobile-nav" id="mobile-nav">
+  <a href="#links">Links</a>
+  <a href="#analytics">Analytics</a>
+  <a href="#pricing">Pricing</a>
+  <a href="#faq">FAQ</a>
+  <a href="#" class="btn btn-primary">Get started free</a>
+</div>
+
+<!-- ─────────────── HERO ───────────────────────────────────────────── -->
+<section class="hero">
+  <div class="hero-inner">
+
+    <div>
+      <div class="hero-badge">New — Custom domains now live</div>
+      <h1 class="hero-title">Short links that<br><em>mean business.</em></h1>
+      <p class="hero-sub">Create branded short links in seconds. Track every click, analyze traffic sources, and grow your reach — all from one clean dashboard.</p>
+    </div>
+
+    <!-- FORM -->
+    <div class="form-card">
+      <form id="shorten-form" novalidate>
+        <div class="form-row">
+          <div class="input-wrap" style="flex:2">
+            <label for="url-input">Paste your long URL</label>
+            <input
+              type="text" id="url-input" class="input-field"
+              placeholder="https://example.com/very/long/url/to/shorten"
+              autocomplete="off" spellcheck="false"
+            />
+          </div>
+          <div class="input-wrap" style="flex:1">
+            <label for="alias-input">Custom alias <span style="font-weight:400;opacity:.5">(optional)</span></label>
+            <div class="alias-wrap">
+              <span class="alias-domain">snip.io/</span>
+              <input type="text" id="alias-input" class="alias-input" placeholder="my-link" autocomplete="off" />
+            </div>
+          </div>
+        </div>
+        <div class="form-foot">
+          <div class="err-msg" id="err-msg">
+            <svg width="14" height="14" viewBox="0 0 14 14" fill="none">
+              <circle cx="7" cy="7" r="6.5" stroke="#f87171"/>
+              <path d="M7 4v3.5M7 9.5v.5" stroke="#f87171" stroke-width="1.2" stroke-linecap="round"/>
+            </svg>
+            <span id="err-text">Please enter a valid URL.</span>
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg" id="shorten-btn" style="min-width:148px">
+            Shorten URL →
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- STATS -->
+    <div class="hero-stats">
+      <div class="stat-chip">
+        <div class="stat-chip-icon">⚡</div>
+        <div><strong>12M+</strong><span>Links created</span></div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-icon">🌍</div>
+        <div><strong>180+</strong><span>Countries tracked</span></div>
+      </div>
+      <div class="stat-chip">
+        <div class="stat-chip-icon">📈</div>
+        <div><strong>99.9%</strong><span>Uptime SLA</span></div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ─────────────── RESULT CARD ───────────────────────────────────── -->
+<div id="result">
+  <div class="result-card" id="result-card">
+    <div class="result-label">Link shortened successfully</div>
+    <div class="result-url-row">
+      <div id="result-url">snip.io/example</div>
+      <button class="copy-btn" id="main-copy-btn" onclick="copyResult()">
+        <span>Copy</span>
+      </button>
+    </div>
+    <div id="result-original" style="font-size:12px;color:var(--text-3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"></div>
+  </div>
+</div>
+
+<!-- ─────────────── RECENT LINKS ──────────────────────────────────── -->
+<section class="section" id="links">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Your links</div>
+      <h2 class="section-title">Recent shortcuts</h2>
+      <p class="section-sub">Click any row to preview its analytics below.</p>
+    </div>
+    <div class="table-wrap reveal">
+      <table class="links-table">
+        <thead>
+          <tr>
+            <th>Original URL</th>
+            <th>Short Link</th>
+            <th>Clicks</th>
+            <th>Created</th>
+            <th>Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="links-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── ANALYTICS ─────────────────────────────────────── -->
+<section class="section section-alt" id="analytics">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Analytics</div>
+      <h2 class="section-title">Link performance</h2>
+      <p class="section-sub">
+        Showing data for
+        <a id="a-link-label" href="#" style="color:var(--accent);text-decoration:none;font-weight:700">snip.io/design</a>
+      </p>
+    </div>
+
+    <div class="a-metrics reveal">
+      <div class="a-metric">
+        <div class="a-metric-label">Total Clicks</div>
+        <div class="a-metric-val" id="a-clicks">1,284</div>
+        <div class="a-metric-ch">↑ 12% this week</div>
+      </div>
+      <div class="a-metric">
+        <div class="a-metric-label">Unique Visitors</div>
+        <div class="a-metric-val" id="a-visitors">891</div>
+        <div class="a-metric-ch">↑ 8% this week</div>
+      </div>
+      <div class="a-metric">
+        <div class="a-metric-label">CTR</div>
+        <div class="a-metric-val" id="a-rate">3.2%</div>
+        <div class="a-metric-ch">↑ 0.4% vs avg</div>
+      </div>
+    </div>
+
+    <div class="a-cards reveal">
+      <div class="a-card">
+        <div class="a-card-title">Clicks — last 7 days</div>
+        <div class="bar-chart" id="bar-chart"></div>
+      </div>
+      <div class="a-card">
+        <div class="a-card-title">Traffic sources</div>
+        <div class="source-list" id="source-list"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── PRICING ───────────────────────────────────────── -->
+<section class="section" id="pricing">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">Pricing</div>
+      <h2 class="section-title">Simple, honest pricing</h2>
+      <p class="section-sub">Start free. Upgrade when you're ready for more power.</p>
+    </div>
+    <div class="pricing-grid">
+
+      <!-- Free -->
+      <div class="pricing-card reveal">
+        <div>
+          <div class="plan-tier">Free</div>
+          <div><span class="plan-amount">$0</span> <span class="plan-period">/month</span></div>
+        </div>
+        <p class="plan-desc">Perfect for individuals and one-off projects with light needs.</p>
+        <ul class="plan-feats">
+          <li>50 short links / month</li>
+          <li>Basic click analytics</li>
+          <li>Custom alias</li>
+          <li>QR code export</li>
+          <li class="off">Custom domain</li>
+          <li class="off">Team workspace</li>
+          <li class="off">API access</li>
+        </ul>
+        <a href="#" class="btn btn-outline">Get started free</a>
+      </div>
+
+      <!-- Pro -->
+      <div class="pricing-card featured reveal">
+        <div class="pricing-pill">Most Popular</div>
+        <div>
+          <div class="plan-tier">Pro</div>
+          <div><span class="plan-amount">$12</span> <span class="plan-period">/month</span></div>
+        </div>
+        <p class="plan-desc">For creators, marketers, and individuals who share links at scale.</p>
+        <ul class="plan-feats">
+          <li>Unlimited short links</li>
+          <li>Advanced analytics</li>
+          <li>Custom alias</li>
+          <li>QR code export</li>
+          <li>Custom domain</li>
+          <li>Link bundles</li>
+          <li class="off">Team workspace</li>
+        </ul>
+        <a href="#" class="btn btn-primary">Start free trial</a>
+      </div>
+
+      <!-- Business -->
+      <div class="pricing-card reveal">
+        <div>
+          <div class="plan-tier">Business</div>
+          <div><span class="plan-amount">$49</span> <span class="plan-period">/month</span></div>
+        </div>
+        <p class="plan-desc">Enterprise-grade for teams who need collaboration and scale.</p>
+        <ul class="plan-feats">
+          <li>Unlimited short links</li>
+          <li>Advanced analytics</li>
+          <li>Custom alias</li>
+          <li>QR code export</li>
+          <li>Custom domain</li>
+          <li>Link bundles</li>
+          <li>Team workspace + API</li>
+        </ul>
+        <a href="#" class="btn btn-outline">Contact sales</a>
+      </div>
+
+    </div>
+  </div>
+</section>
+
+<!-- ─────────────── FAQ ────────────────────────────────────────────── -->
+<section class="section section-alt" id="faq">
+  <div class="container">
+    <div class="section-header reveal">
+      <div class="section-tag">FAQ</div>
+      <h2 class="section-title">Common questions</h2>
+      <p class="section-sub">Everything you need to know about snip.</p>
+    </div>
+    <div class="faq-list" id="faq-list"></div>
+  </div>
+</section>
+
+<!-- ─────────────── FOOTER ────────────────────────────────────────── -->
+<footer>
+  <div class="footer-inner">
+    <div class="footer-brand">
+      <a href="#" class="logo footer-logo">snip<span>.</span></a>
+      <p class="footer-desc">Smarter short links for teams, creators, and developers. Track every click.</p>
+      <div class="footer-socials">
+        <a href="#" class="social-link" aria-label="Twitter/X">𝕏</a>
+        <a href="#" class="social-link" aria-label="GitHub">GH</a>
+        <a href="#" class="social-link" aria-label="LinkedIn">in</a>
+      </div>
+    </div>
+    <div class="footer-col">
+      <h4>Product</h4>
+      <ul>
+        <li><a href="#">Features</a></li>
+        <li><a href="#pricing">Pricing</a></li>
+        <li><a href="#">API docs</a></li>
+        <li><a href="#">Changelog</a></li>
+        <li><a href="#">Status</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Company</h4>
+      <ul>
+        <li><a href="#">About</a></li>
+        <li><a href="#">Blog</a></li>
+        <li><a href="#">Careers</a></li>
+        <li><a href="#">Press kit</a></li>
+        <li><a href="#">Contact</a></li>
+      </ul>
+    </div>
+    <div class="footer-col">
+      <h4>Legal</h4>
+      <ul>
+        <li><a href="#">Privacy policy</a></li>
+        <li><a href="#">Terms of service</a></li>
+        <li><a href="#">Cookie policy</a></li>
+        <li><a href="#">GDPR</a></li>
+        <li><a href="#">Security</a></li>
+      </ul>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2026 Snip Technologies, Inc. All rights reserved.</p>
+    <p style="color:var(--text-3)">Made for the modern web</p>
+  </div>
+</footer>
+
+<!-- ─────────────── JAVASCRIPT ────────────────────────────────────── -->
+<script>
+  /* ── DATA ───────────────────────────────────────────────────────── */
+  const BASE = 'snip.io/';
+  const CHARS = 'abcdefghijklmnopqrstuvwxyz0123456789';
+
+  const mockLinks = [
+    { original:'https://www.figma.com/file/abc123/design-system-v2', short:'snip.io/design',  alias:'design',  clicks:1284, created:'2026-05-10', status:'active' },
+    { original:'https://docs.google.com/presentation/d/1xyz8abc',    short:'snip.io/q4deck', alias:'q4deck',  clicks:892,  created:'2026-05-08', status:'active' },
+    { original:'https://calendly.com/team/30min-intro-call',         short:'snip.io/meet',   alias:'meet',    clicks:654,  created:'2026-05-05', status:'active' },
+    { original:'https://twitter.com/intent/tweet?text=Hello+World',  short:'snip.io/tweet',  alias:'tweet',   clicks:321,  created:'2026-05-01', status:'active' },
+    { original:'https://github.com/anthropics/anthropic-sdk-python', short:'snip.io/sdk',    alias:'sdk',     clicks:156,  created:'2026-04-28', status:'active' },
+  ];
+
+  const analyticsDB = {
+    design: {
+      clicks:'1,284', visitors:'891', rate:'3.2%',
+      days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], vals:[120,180,95,220,165,310,194],
+      sources:[
+        {name:'Direct',  pct:45, color:'#00e096'},
+        {name:'Twitter', pct:28, color:'#60a5fa'},
+        {name:'LinkedIn',pct:17, color:'#fbbf24'},
+        {name:'Other',   pct:10, color:'#a78bfa'},
+      ]
+    },
+    q4deck: {
+      clicks:'892', visitors:'612', rate:'2.8%',
+      days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], vals:[80,140,200,110,90,140,132],
+      sources:[
+        {name:'Email',  pct:52, color:'#00e096'},
+        {name:'Direct', pct:30, color:'#60a5fa'},
+        {name:'Slack',  pct:11, color:'#fbbf24'},
+        {name:'Other',  pct:7,  color:'#a78bfa'},
+      ]
+    },
+    meet: {
+      clicks:'654', visitors:'520', rate:'4.1%',
+      days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], vals:[60,95,110,140,100,80,69],
+      sources:[
+        {name:'Email',  pct:60, color:'#00e096'},
+        {name:'Direct', pct:25, color:'#60a5fa'},
+        {name:'Twitter',pct:10, color:'#fbbf24'},
+        {name:'Other',  pct:5,  color:'#a78bfa'},
+      ]
+    },
+    tweet: {
+      clicks:'321', visitors:'280', rate:'1.9%',
+      days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], vals:[30,50,40,70,55,40,36],
+      sources:[
+        {name:'Twitter',pct:70, color:'#00e096'},
+        {name:'Direct', pct:20, color:'#60a5fa'},
+        {name:'Other',  pct:10, color:'#a78bfa'},
+      ]
+    },
+    sdk: {
+      clicks:'156', visitors:'128', rate:'0.9%',
+      days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], vals:[15,28,22,35,20,18,18],
+      sources:[
+        {name:'GitHub', pct:55, color:'#00e096'},
+        {name:'Direct', pct:30, color:'#60a5fa'},
+        {name:'HN',     pct:15, color:'#fbbf24'},
+      ]
+    },
+  };
+
+  const faqData = [
+    { q:'Is there a free plan?',               a:'Yes! Our free plan lets you create up to 50 short links per month with basic click analytics and custom aliases. No credit card required to get started.' },
+    { q:'Can I use my own custom domain?',      a:'Custom domains are available on Pro and Business plans. Simply add a CNAME record pointing to our servers and you\'re live in minutes.' },
+    { q:'How long do my links stay active?',   a:'Links never expire by default on any plan. On paid plans, you can optionally set custom expiration dates or click-count limits.' },
+    { q:'How accurate is the click tracking?', a:'Our analytics engine captures each click with geolocation, device type, browser, and referrer — all with under 50 ms overhead on redirect. Bot traffic is filtered automatically.' },
+    { q:'Can I edit a link after creating it?', a:'Yes. You can update the destination URL, change the alias, or delete any link at any time from your dashboard. Changes apply instantly.' },
+    { q:'Is there an API?',                    a:'Absolutely. Our REST API lets you create, update, and query links programmatically. API access is included on Pro and Business plans with generous rate limits.' },
+  ];
+
+  /* ── STATE ──────────────────────────────────────────────────────── */
+  let links = [...mockLinks];
+  let activeAlias = 'design';
+  let currentShortURL = '';
+
+  /* ── UTILS ──────────────────────────────────────────────────────── */
+  function randCode() {
+    return Array.from({length:6}, () => CHARS[Math.floor(Math.random()*CHARS.length)]).join('');
+  }
+
+  function sanitizeAlias(s) {
+    return s.replace(/[^a-zA-Z0-9\-_]/g,'').slice(0,30);
+  }
+
+  function validateURL(raw) {
+    let url = raw.trim();
+    if (!url) return {valid:false, url:''};
+    if (!/^https?:\/\//i.test(url)) url = 'https://' + url;
+    try { new URL(url); return {valid:true, url}; }
+    catch { return {valid:false, url:''}; }
+  }
+
+  function fmtDate(s) {
+    return new Date(s).toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  }
+
+  function trunc(s, n) { return s.length > n ? s.slice(0,n)+'…' : s; }
+
+  /* animate a numeric element from 0 to target */
+  function countUp(el, targetStr) {
+    const num = parseInt(targetStr.replace(/[^0-9]/g,''));
+    const suffix = targetStr.replace(/[\d,]/g,'');
+    if (isNaN(num)) { el.textContent = targetStr; return; }
+    const dur = 550, t0 = performance.now();
+    (function frame(now) {
+      const p = Math.min((now-t0)/dur, 1);
+      const ease = 1 - Math.pow(1-p, 3);
+      el.textContent = Math.round(num*ease).toLocaleString() + suffix;
+      if (p < 1) requestAnimationFrame(frame);
+    })(t0);
+  }
+
+  /* ── ERROR HELPERS ──────────────────────────────────────────────── */
+  function showErr(msg) {
+    const m = document.getElementById('err-msg');
+    document.getElementById('err-text').textContent = msg;
+    m.classList.add('show');
+    document.getElementById('url-input').classList.add('has-error');
+  }
+  function clearErr() {
+    document.getElementById('err-msg').classList.remove('show');
+    document.getElementById('url-input').classList.remove('has-error');
+  }
+
+  /* ── FORM SUBMIT ────────────────────────────────────────────────── */
+  document.getElementById('shorten-form').addEventListener('submit', e => {
+    e.preventDefault();
+    const rawURL  = document.getElementById('url-input').value;
+    const rawAlias = document.getElementById('alias-input').value;
+
+    if (!rawURL.trim()) { showErr('Please enter a URL to shorten.'); return; }
+    const {valid, url} = validateURL(rawURL);
+    if (!valid) { showErr('Please enter a valid URL (e.g., https://example.com).'); return; }
+    clearErr();
+
+    const btn = document.getElementById('shorten-btn');
+    btn.textContent = 'Shortening…';
+    btn.disabled = true;
+
+    setTimeout(() => {
+      const alias = sanitizeAlias(rawAlias) || randCode();
+      const shortURL = BASE + alias;
+      currentShortURL = shortURL;
+
+      /* show result card */
+      document.getElementById('result-url').textContent = shortURL;
+      document.getElementById('result-original').textContent = url;
+      const resultEl = document.getElementById('result');
+      resultEl.style.display = 'block';
+      const mainCopyBtn = document.getElementById('main-copy-btn');
+      mainCopyBtn.classList.remove('copied');
+      mainCopyBtn.innerHTML = '<span>Copy</span>';
+
+      /* add to table */
+      links.unshift({ original:url, short:shortURL, alias, clicks:0, created:new Date().toISOString().split('T')[0], status:'active' });
+
+      /* seed analytics for new link */
+      analyticsDB[alias] = {
+        clicks:'0', visitors:'0', rate:'0%',
+        days:['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], vals:[0,0,0,0,0,0,0],
+        sources:[{name:'Direct',pct:100,color:'#00e096'}],
+      };
+
+      renderTable();
+      btn.innerHTML = 'Shorten URL →';
+      btn.disabled = false;
+      document.getElementById('url-input').value = '';
+      document.getElementById('alias-input').value = '';
+      resultEl.scrollIntoView({behavior:'smooth', block:'center'});
+    }, 420);
+  });
+
+  /* ── COPY RESULT ────────────────────────────────────────────────── */
+  function copyResult() {
+    const text = 'https://' + currentShortURL;
+    writeClip(text, document.getElementById('main-copy-btn'), 'Copy', '✓ Copied!');
+  }
+
+  function writeClip(text, btn, idle, done) {
+    navigator.clipboard.writeText(text).catch(() => {
+      const ta = document.createElement('textarea');
+      ta.value = text; document.body.appendChild(ta); ta.select();
+      document.execCommand('copy'); document.body.removeChild(ta);
+    });
+    btn.classList.add('copied');
+    btn.innerHTML = `<span>${done}</span>`;
+    setTimeout(() => { btn.classList.remove('copied'); btn.innerHTML = `<span>${idle}</span>`; }, 2000);
+  }
+
+  /* ── TABLE ──────────────────────────────────────────────────────── */
+  function renderTable() {
+    document.getElementById('links-tbody').innerHTML = links.map((l, i) => `
+      <tr onclick="selectLink('${l.alias}')" style="animation:fadeUp .35s ${i*.04}s both">
+        <td class="td-orig" title="${l.original}">${trunc(l.original, 48)}</td>
+        <td class="td-short">${l.short}</td>
+        <td class="td-num">${l.clicks.toLocaleString()}</td>
+        <td class="td-date">${fmtDate(l.created)}</td>
+        <td><span class="badge badge-active">Active</span></td>
+        <td>
+          <div class="td-actions">
+            <button class="act-btn" onclick="copyRow(event,'${l.short}',this)">Copy</button>
+            <button class="act-btn" onclick="goAnalytics(event,'${l.alias}')">Analytics</button>
+          </div>
+        </td>
+      </tr>
+    `).join('');
+  }
+
+  function copyRow(e, url, btn) {
+    e.stopPropagation();
+    writeClip('https://' + url, btn, 'Copy', '✓ Copied');
+  }
+
+  function goAnalytics(e, alias) {
+    e.stopPropagation();
+    selectLink(alias);
+    document.getElementById('analytics').scrollIntoView({behavior:'smooth'});
+  }
+
+  /* ── ANALYTICS ──────────────────────────────────────────────────── */
+  function selectLink(alias) {
+    activeAlias = alias;
+    const d = analyticsDB[alias] || analyticsDB['design'];
+    document.getElementById('a-link-label').textContent = 'snip.io/' + alias;
+    countUp(document.getElementById('a-clicks'),   d.clicks);
+    countUp(document.getElementById('a-visitors'), d.visitors);
+    document.getElementById('a-rate').textContent = d.rate;
+    renderBars(d);
+    renderSources(d);
+  }
+
+  function renderBars(d) {
+    const max = Math.max(...d.vals) || 1;
+    document.getElementById('bar-chart').innerHTML = d.vals.map((v,i) => `
+      <div class="bar-col">
+        <div class="bar" style="height:${Math.max((v/max)*100,3)}%" title="${v} clicks — ${d.days[i]}"></div>
+        <div class="bar-lbl">${d.days[i]}</div>
+      </div>
+    `).join('');
+  }
+
+  function renderSources(d) {
+    const el = document.getElementById('source-list');
+    el.innerHTML = d.sources.map(s => `
+      <div class="source-row">
+        <div class="source-name">${s.name}</div>
+        <div class="source-track">
+          <div class="source-fill" style="width:0%;background:${s.color}" data-w="${s.pct}%"></div>
+        </div>
+        <div class="source-pct">${s.pct}%</div>
+      </div>
+    `).join('');
+    /* animate bars after paint */
+    requestAnimationFrame(() =>
+      el.querySelectorAll('.source-fill').forEach(b => b.style.width = b.dataset.w)
+    );
+  }
+
+  /* ── FAQ ────────────────────────────────────────────────────────── */
+  function renderFAQ() {
+    document.getElementById('faq-list').innerHTML = faqData.map((f,i) => `
+      <div class="faq-item ${i===0?'open':''}" onclick="toggleFAQ(this)">
+        <button class="faq-q">${f.q}<div class="faq-icon">+</div></button>
+        <div class="faq-body"><div class="faq-body-inner">${f.a}</div></div>
+      </div>
+    `).join('');
+  }
+
+  function toggleFAQ(item) {
+    const wasOpen = item.classList.contains('open');
+    document.querySelectorAll('.faq-item').forEach(i => i.classList.remove('open'));
+    if (!wasOpen) item.classList.add('open');
+  }
+
+  /* ── MOBILE NAV ─────────────────────────────────────────────────── */
+  document.getElementById('hamburger').addEventListener('click', () =>
+    document.getElementById('mobile-nav').classList.toggle('open')
+  );
+  document.querySelectorAll('.mobile-nav a').forEach(a =>
+    a.addEventListener('click', () => document.getElementById('mobile-nav').classList.remove('open'))
+  );
+
+  /* ── SCROLL REVEAL ──────────────────────────────────────────────── */
+  const revealObs = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) { e.target.classList.add('in'); revealObs.unobserve(e.target); } });
+  }, {threshold: 0.1});
+
+  /* ── INIT ───────────────────────────────────────────────────────── */
+  renderTable();
+  renderFAQ();
+  selectLink('design');
+
+  /* attach reveal observer after DOM is ready */
+  document.querySelectorAll('.reveal').forEach(el => revealObs.observe(el));
+</script>
+</body>
+</html>
